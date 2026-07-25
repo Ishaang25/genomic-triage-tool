@@ -15,12 +15,11 @@ st.set_page_config(
 )
 
 # ----------------------------------------------------------------------------
-# Clinical color palette
+# Clinical color palette (mirrors .streamlit/config.toml)
 # ----------------------------------------------------------------------------
 PRIMARY = "#0F4C81"
 PRIMARY_DARK = "#0A3660"
 PRIMARY_LIGHT = "#E8F0F8"
-GREY_BG = "#F8F9FA"
 GREY_BORDER = "#E1E4E8"
 TEXT_MUTED = "#5A6472"
 DANGER = "#B3261E"
@@ -29,34 +28,18 @@ SAFE = "#1E7B4D"
 SAFE_BG = "#E9F7EF"
 
 # ----------------------------------------------------------------------------
-# Global style: hide default Streamlit chrome + apply clinical theme
+# Style: ONLY styles elements we create ourselves. Does not touch Streamlit's
+# own header, sidebar toggle, or chrome — the .streamlit/config.toml theme
+# block handles the overall light/dark backdrop natively and reliably.
 # ----------------------------------------------------------------------------
 st.markdown(f"""
     <style>
-    /* Hide only the hamburger menu, footer, and the thin rainbow "decoration"
-       strip along the top edge. We deliberately do NOT hide, transform, or
-       otherwise fight the <header> element itself — that's what was trapping
-       the sidebar closed in earlier passes. Leaving header alone means the
-       sidebar's native expand/collapse control keeps working normally. */
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
-    [data-testid="stDecoration"] {{display: none;}}
-    header {{
-        background-color: {GREY_BG} !important;
-        box-shadow: none !important;
-    }}
-    .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
 
-    .stApp, [data-testid="stAppViewContainer"] {{
-        background-color: {GREY_BG} !important;
-    }}
-    [data-testid="stSidebar"] {{
-        background-color: #FFFFFF !important;
-    }}
-    .main {{ background-color: {GREY_BG}; }}
+    .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
     html, body, [class*="css"] {{ font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }}
 
-    /* Buttons */
     .stButton>button, .stDownloadButton>button {{
         background-color: {PRIMARY};
         color: white;
@@ -64,14 +47,12 @@ st.markdown(f"""
         border-radius: 6px;
         padding: 0.5rem 1.2rem;
         font-weight: 500;
-        transition: background-color 0.15s ease-in-out;
     }}
     .stButton>button:hover, .stDownloadButton>button:hover {{
         background-color: {PRIMARY_DARK};
         color: white;
     }}
 
-    /* Cards */
     .metric-card {{
         background-color: white;
         padding: 20px 24px;
@@ -82,7 +63,6 @@ st.markdown(f"""
         height: 100%;
     }}
 
-    /* Hero */
     .hero-icon {{
         background: linear-gradient(135deg, {PRIMARY} 0%, {PRIMARY_DARK} 100%);
         width: 72px; height: 72px;
@@ -105,7 +85,6 @@ st.markdown(f"""
         margin-top: 4px;
     }}
 
-    /* Disclaimer */
     .disclaimer-banner {{
         background-color: {PRIMARY_LIGHT};
         border-left: 4px solid {PRIMARY};
@@ -116,7 +95,6 @@ st.markdown(f"""
         margin: 18px 0 24px 0;
     }}
 
-    /* Result banners */
     .result-banner {{
         border-radius: 10px;
         padding: 14px 18px;
@@ -127,7 +105,6 @@ st.markdown(f"""
     .result-tumor {{ background-color: {DANGER_BG}; color: {DANGER}; border: 1px solid rgba(179,38,30,0.25); }}
     .result-normal {{ background-color: {SAFE_BG}; color: {SAFE}; border: 1px solid rgba(30,123,77,0.25); }}
 
-    /* Empty state */
     .empty-state {{
         background-color: white;
         border: 1.5px dashed {GREY_BORDER};
@@ -165,7 +142,7 @@ if not os.path.exists(MODEL_PATH):
 model = load_model(MODEL_PATH)
 
 # ----------------------------------------------------------------------------
-# Sidebar: upload + documentation (keeps main canvas uncluttered)
+# Sidebar: upload + documentation
 # ----------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("### 🧬 Triage Console")
@@ -233,11 +210,8 @@ st.markdown(
 # ----------------------------------------------------------------------------
 if uploaded_file is not None:
     try:
-        # Read data based on file type
         if uploaded_file.name.endswith('.txt'):
-            # TCGA txt files are tab-separated and have genes as rows
             raw_df = pd.read_csv(uploaded_file, sep="\t")
-            # Check if it needs transposition (if 'Hybridization REF' is a column)
             if "Hybridization REF" in raw_df.columns:
                 input_df = raw_df.set_index("Hybridization REF").T
             else:
@@ -245,11 +219,9 @@ if uploaded_file is not None:
         else:
             input_df = pd.read_csv(uploaded_file)
 
-        # Drop label column if it accidentally exists in the uploaded data
         if "label" in input_df.columns:
             input_df = input_df.drop("label", axis=1)
 
-        # Basic validation
         if input_df.shape[1] < 1000:
             st.warning(
                 "Warning: The uploaded file has significantly fewer features than the "
@@ -261,7 +233,6 @@ if uploaded_file is not None:
             f"and {input_df.shape[1]} gene features."
         )
 
-        # Predict
         report_lines = [
             "Genomic Breast Cancer Triage Tool — Summary Report",
             f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
@@ -272,7 +243,7 @@ if uploaded_file is not None:
 
         with st.spinner("Analyzing genomic profile..."):
             predictions = model.predict(input_df)
-            probabilities = model.predict_proba(input_df)[:, 1]  # P(Tumor)
+            probabilities = model.predict_proba(input_df)[:, 1]
 
             for i, (pred, prob) in enumerate(zip(predictions, probabilities)):
                 st.markdown(f"### Sample {i + 1}")
@@ -305,13 +276,9 @@ if uploaded_file is not None:
                     st.write("**Top 5 Biomarker Drivers**")
                     st.caption("Genes with highest ANOVA F-score contributing to this prediction")
 
-                    # Extract feature selection data from the pipeline
                     selector = model.named_steps['selector']
                     selected_mask = selector.get_support()
 
-                    # Ensure we only look at genes that were in the input and selected.
-                    # The selector was fit on training data, so it has a fixed set of
-                    # features; if input_df columns match training columns, this works.
                     if len(selected_mask) == input_df.shape[1]:
                         scores = selector.scores_[selected_mask]
                         gene_names = input_df.columns[selected_mask]

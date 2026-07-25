@@ -33,52 +33,27 @@ SAFE_BG = "#E9F7EF"
 # ----------------------------------------------------------------------------
 st.markdown(f"""
     <style>
-    /* Hide the hamburger menu, footer, and deploy/toolbar buttons ONLY.
-       IMPORTANT: we do NOT hide the whole <header> element — in current
-       Streamlit versions the sidebar's expand/collapse arrow lives inside
-       that header region, so hiding it entirely traps the sidebar closed
-       with no way to reopen it. */
+    /* Hide only the hamburger menu, footer, and the thin rainbow "decoration"
+       strip along the top edge. We deliberately do NOT hide, transform, or
+       otherwise fight the <header> element itself — that's what was trapping
+       the sidebar closed in earlier passes. Leaving header alone means the
+       sidebar's native expand/collapse control keeps working normally. */
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
-    [data-testid="stToolbar"] {{visibility: hidden;}}
-    header {{background: transparent !important; box-shadow: none !important;}}
+    [data-testid="stDecoration"] {{display: none;}}
+    header {{
+        background-color: {GREY_BG} !important;
+        box-shadow: none !important;
+    }}
     .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
 
-    /* Belt-and-suspenders: force the light backdrop even if the visitor's
-       OS/browser is in dark mode and something ignores .streamlit/config.toml.
-       The config.toml theme block is the primary fix; this is a fallback. */
     .stApp, [data-testid="stAppViewContainer"] {{
         background-color: {GREY_BG} !important;
     }}
-    .main {{ background-color: {GREY_BG}; }}
-
-    /* Force the sidebar to always render expanded. Streamlit Community Cloud
-       runs the app inside an iframe, and Streamlit sometimes measures THAT
-       iframe's width to decide whether to auto-collapse the sidebar, even
-       with initial_sidebar_state="expanded" set. It collapses the sidebar
-       with a CSS transform (sliding it off-screen), not display:none, so we
-       override that transform directly rather than relying on the toggle. */
-    section[data-testid="stSidebar"] {{
-        display: block !important;
-        visibility: visible !important;
-        transform: none !important;
-        min-width: 21rem !important;
-        width: 21rem !important;
-        flex-shrink: 0 !important;
+    [data-testid="stSidebar"] {{
         background-color: #FFFFFF !important;
     }}
-    section[data-testid="stSidebar"][aria-expanded="false"] {{
-        transform: none !important;
-        margin-left: 0 !important;
-    }}
-
-    /* Keep the native toggle visible too, in case someone wants to collapse
-       it manually later. */
-    [data-testid="collapsedControl"] {{
-        visibility: visible !important;
-        display: flex !important;
-        color: {PRIMARY} !important;
-    }}
+    .main {{ background-color: {GREY_BG}; }}
     html, body, [class*="css"] {{ font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }}
 
     /* Buttons */

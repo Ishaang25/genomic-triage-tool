@@ -37,7 +37,7 @@ st.markdown(f"""
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
 
-    .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
+    .block-container {{padding-top: 5rem; padding-bottom: 2rem; max-width: 1100px;}}
     html, body, [class*="css"] {{ font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }}
 
     .stButton>button, .stDownloadButton>button {{

@@ -67,7 +67,8 @@ st.markdown(f"""
         height: 100%;
     }}
 
-    /* Hero */
+    
+        /* Hero */
     .hero-icon {{
         background: linear-gradient(135deg, {PRIMARY} 0%, {PRIMARY_DARK} 100%);
         width: 72px; height: 72px;
@@ -83,11 +84,15 @@ st.markdown(f"""
         font-weight: 700;
         margin-bottom: 0;
         line-height: 1.2;
+        white-space: normal;
+        word-wrap: break-word;
     }}
     .hero-subtitle {{
         color: {TEXT_MUTED};
         font-size: 1.0rem;
         margin-top: 4px;
+        white-space: normal;
+        word-wrap: break-word;
     }}
 
     /* Disclaimer */

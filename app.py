@@ -36,8 +36,18 @@ st.markdown(f"""
     /* Hide default Streamlit chrome (hamburger menu, footer, header bar) */
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
     .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
 
+    /* Belt-and-suspenders: force the light backdrop even if the visitor's
+       OS/browser is in dark mode and something ignores .streamlit/config.toml.
+       The config.toml theme block is the primary fix; this is a fallback. */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
+        background-color: {GREY_BG} !important;
+    }}
+    [data-testid="stSidebar"] {{
+        background-color: #FFFFFF !important;
+    }}
     .main {{ background-color: {GREY_BG}; }}
     html, body, [class*="css"] {{ font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }}
 

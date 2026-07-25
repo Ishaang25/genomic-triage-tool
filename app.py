@@ -50,13 +50,30 @@ st.markdown(f"""
     .stApp, [data-testid="stAppViewContainer"] {{
         background-color: {GREY_BG} !important;
     }}
-    [data-testid="stSidebar"] {{
-        background-color: #FFFFFF !important;
-    }}
     .main {{ background-color: {GREY_BG}; }}
 
-    /* Guarantee the sidebar toggle is always visible and on-palette, even if
-       the sidebar auto-collapses on a narrow/embedded viewport. */
+    /* Force the sidebar to always render expanded. Streamlit Community Cloud
+       runs the app inside an iframe, and Streamlit sometimes measures THAT
+       iframe's width to decide whether to auto-collapse the sidebar, even
+       with initial_sidebar_state="expanded" set. It collapses the sidebar
+       with a CSS transform (sliding it off-screen), not display:none, so we
+       override that transform directly rather than relying on the toggle. */
+    section[data-testid="stSidebar"] {{
+        display: block !important;
+        visibility: visible !important;
+        transform: none !important;
+        min-width: 21rem !important;
+        width: 21rem !important;
+        flex-shrink: 0 !important;
+        background-color: #FFFFFF !important;
+    }}
+    section[data-testid="stSidebar"][aria-expanded="false"] {{
+        transform: none !important;
+        margin-left: 0 !important;
+    }}
+
+    /* Keep the native toggle visible too, in case someone wants to collapse
+       it manually later. */
     [data-testid="collapsedControl"] {{
         visibility: visible !important;
         display: flex !important;

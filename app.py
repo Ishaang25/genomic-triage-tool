@@ -33,22 +33,35 @@ SAFE_BG = "#E9F7EF"
 # ----------------------------------------------------------------------------
 st.markdown(f"""
     <style>
-    /* Hide default Streamlit chrome (hamburger menu, footer, header bar) */
+    /* Hide the hamburger menu, footer, and deploy/toolbar buttons ONLY.
+       IMPORTANT: we do NOT hide the whole <header> element — in current
+       Streamlit versions the sidebar's expand/collapse arrow lives inside
+       that header region, so hiding it entirely traps the sidebar closed
+       with no way to reopen it. */
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
-    header {{visibility: hidden;}}
+    [data-testid="stToolbar"] {{visibility: hidden;}}
+    header {{background: transparent !important; box-shadow: none !important;}}
     .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
 
     /* Belt-and-suspenders: force the light backdrop even if the visitor's
        OS/browser is in dark mode and something ignores .streamlit/config.toml.
        The config.toml theme block is the primary fix; this is a fallback. */
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {{
+    .stApp, [data-testid="stAppViewContainer"] {{
         background-color: {GREY_BG} !important;
     }}
     [data-testid="stSidebar"] {{
         background-color: #FFFFFF !important;
     }}
     .main {{ background-color: {GREY_BG}; }}
+
+    /* Guarantee the sidebar toggle is always visible and on-palette, even if
+       the sidebar auto-collapses on a narrow/embedded viewport. */
+    [data-testid="collapsedControl"] {{
+        visibility: visible !important;
+        display: flex !important;
+        color: {PRIMARY} !important;
+    }}
     html, body, [class*="css"] {{ font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }}
 
     /* Buttons */

@@ -36,7 +36,6 @@ st.markdown(f"""
     /* Hide default Streamlit chrome (hamburger menu, footer, header bar) */
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
-    header {{visibility: hidden;}}
     .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
 
     .main {{ background-color: {GREY_BG}; }}

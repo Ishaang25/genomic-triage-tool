@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ----------------------------------------------------------------------------
-# Clinical color palette (mirrors .streamlit/config.toml)
+# Clinical color palette
 # ----------------------------------------------------------------------------
 PRIMARY = "#0F4C81"
 PRIMARY_DARK = "#0A3660"
@@ -26,11 +26,11 @@ DANGER = "#B3261E"
 DANGER_BG = "#FBEAE9"
 SAFE = "#1E7B4D"
 SAFE_BG = "#E9F7EF"
+WARNING_BG = "#FFF4E5"
+WARNING = "#8A6100"
 
 # ----------------------------------------------------------------------------
-# Style: ONLY styles elements we create ourselves. Does not touch Streamlit's
-# own header, sidebar toggle, or chrome — the .streamlit/config.toml theme
-# block handles the overall light/dark backdrop natively and reliably.
+# Global style
 # ----------------------------------------------------------------------------
 st.markdown(f"""
     <style>
@@ -104,6 +104,7 @@ st.markdown(f"""
     }}
     .result-tumor {{ background-color: {DANGER_BG}; color: {DANGER}; border: 1px solid rgba(179,38,30,0.25); }}
     .result-normal {{ background-color: {SAFE_BG}; color: {SAFE}; border: 1px solid rgba(30,123,77,0.25); }}
+    .action-banner {{ background-color: {WARNING_BG}; color: {WARNING}; border: 1px solid rgba(138,97,0,0.25); }}
 
     .empty-state {{
         background-color: white;
@@ -127,6 +128,13 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ----------------------------------------------------------------------------
+# Business Logic Constants
+# ----------------------------------------------------------------------------
+PATHOLOGY_COST = 150.0
+PATHOLOGY_TIME_HOURS = 0.75
+AI_COST = 0.50
+
+# ----------------------------------------------------------------------------
 # Model Loading
 # ----------------------------------------------------------------------------
 @st.cache_resource
@@ -142,7 +150,7 @@ if not os.path.exists(MODEL_PATH):
 model = load_model(MODEL_PATH)
 
 # ----------------------------------------------------------------------------
-# Sidebar: upload + documentation
+# Sidebar: upload + documentation + scale settings
 # ----------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("### 🧬 Triage Console")
@@ -159,6 +167,14 @@ with st.sidebar:
     st.caption("Accepted formats: TCGA `.txt` or `.csv`")
 
     st.markdown("---")
+    st.markdown("#### Hospital Scale Settings")
+    daily_volume = st.slider(
+        "Daily Patient Volume (Samples)", 
+        min_value=10, max_value=500, value=100, step=10,
+        help="Used to calculate projected daily ROI for the diagnostic lab."
+    )
+
+    st.markdown("---")
 
     with st.expander("ℹ️ About this tool"):
         st.markdown(
@@ -168,7 +184,7 @@ with st.sidebar:
             "types.\n\n"
             "- **Input space:** 17,814 gene expression features\n"
             "- **Model:** scikit-learn pipeline with ANOVA F-score feature selection\n"
-            "- **Output:** malignancy probability + top contributing biomarkers"
+            "- **Output:** malignancy probability + top contributing biomarkers + commercial ROI"
         )
 
     with st.expander("⚙️ Model details"):
@@ -194,7 +210,7 @@ with col_title:
     st.markdown("<p class='hero-title'>Genomic Breast Cancer Triage Tool</p>", unsafe_allow_html=True)
     st.markdown(
         "<p class='hero-subtitle'>Upload a gene expression profile to receive an instant "
-        "malignancy assessment and biomarker breakdown.</p>",
+        "malignancy assessment, biomarker breakdown, and clinical economics report.</p>",
         unsafe_allow_html=True,
     )
 
@@ -237,6 +253,7 @@ if uploaded_file is not None:
             "Genomic Breast Cancer Triage Tool — Summary Report",
             f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
             f"Source file: {uploaded_file.name}",
+            f"Hospital Daily Volume Setting: {daily_volume} samples",
             "For research and educational use only. Not a clinical diagnosis.",
             "-" * 60,
         ]
@@ -304,6 +321,38 @@ if uploaded_file is not None:
                         )
                     st.markdown("</div>", unsafe_allow_html=True)
 
+                # Clinical Economics & Triage Action Section
+                st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
+                st.write("**Clinical Economics & Triage Action**")
+                st.caption("Estimated commercial impact based on AI-driven triage")
+
+                if pred == 1:
+                    action = "Flag for immediate manual pathology review (High Risk)"
+                    cost_saved_per_sample = 0.0
+                    time_saved_per_sample = 0.0
+                else:
+                    action = "Bypass manual pathology review (Low Risk)"
+                    cost_saved_per_sample = PATHOLOGY_COST - AI_COST
+                    time_saved_per_sample = PATHOLOGY_TIME_HOURS
+
+                econ_col1, econ_col2, econ_col3 = st.columns(3)
+                with econ_col1:
+                    st.metric(label="Recommended Action", value=action)
+                with econ_col2:
+                    st.metric(label="Est. Cost Saved (per sample)", value=f"${cost_saved_per_sample:.2f}")
+                with econ_col3:
+                    st.metric(label="Doctor Hours Saved (per sample)", value=f"{time_saved_per_sample:.2f} hrs")
+
+                # Scale calculation
+                if pred == 0:
+                    daily_savings = cost_saved_per_sample * daily_volume
+                    st.markdown(f"<div class='action-banner'>Projected Daily Hospital Savings: <b>${daily_savings:,.2f}</b> (at {daily_volume} samples/day)</div>", unsafe_allow_html=True)
+                    report_lines.append(f"  Action: {action} | Cost Saved/Sample: ${cost_saved_per_sample:.2f} | Projected Daily Savings: ${daily_savings:,.2f}")
+                else:
+                    st.markdown(f"<div class='action-banner'>Action: {action}</div>", unsafe_allow_html=True)
+                    report_lines.append(f"  Action: {action} | Cost Saved/Sample: $0.00")
+
+                st.markdown("</div>", unsafe_allow_html=True)
                 st.markdown("---")
 
         report_lines.append("-" * 60)

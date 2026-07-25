@@ -36,6 +36,7 @@ st.markdown(f"""
     /* Hide default Streamlit chrome (hamburger menu, footer, header bar) */
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
     .block-container {{padding-top: 2rem; padding-bottom: 2rem; max-width: 1100px;}}
 
     .main {{ background-color: {GREY_BG}; }}
@@ -67,8 +68,7 @@ st.markdown(f"""
         height: 100%;
     }}
 
-    
-        /* Hero */
+    /* Hero */
     .hero-icon {{
         background: linear-gradient(135deg, {PRIMARY} 0%, {PRIMARY_DARK} 100%);
         width: 72px; height: 72px;
@@ -78,19 +78,17 @@ st.markdown(f"""
         box-shadow: 0 4px 10px rgba(15,76,129,0.25);
         margin-top: 4px;
     }}
-        .hero-title {{
+    .hero-title {{
         color: {PRIMARY_DARK};
         font-size: 2.1rem;
         font-weight: 700;
         margin-bottom: 0;
         line-height: 1.2;
-        overflow-wrap: anywhere;
     }}
     .hero-subtitle {{
         color: {TEXT_MUTED};
         font-size: 1.0rem;
         margin-top: 4px;
-        overflow-wrap: anywhere;
     }}
 
     /* Disclaimer */
@@ -198,7 +196,7 @@ with st.sidebar:
 # ----------------------------------------------------------------------------
 # Hero section
 # ----------------------------------------------------------------------------
-col_icon, col_title = st.columns([1, 12])
+col_icon, col_title = st.columns([1, 8])
 with col_icon:
     st.markdown("<div class='hero-icon'>🧬</div>", unsafe_allow_html=True)
 with col_title:

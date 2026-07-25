@@ -321,7 +321,7 @@ if uploaded_file is not None:
                         )
                     st.markdown("</div>", unsafe_allow_html=True)
 
-                # Clinical Economics & Triage Action Section
+                               # Clinical Economics & Triage Action Section
                 st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
                 st.write("**Clinical Economics & Triage Action**")
                 st.caption("Estimated commercial impact based on AI-driven triage")
@@ -335,13 +335,14 @@ if uploaded_file is not None:
                     cost_saved_per_sample = PATHOLOGY_COST - AI_COST
                     time_saved_per_sample = PATHOLOGY_TIME_HOURS
 
-                econ_col1, econ_col2, econ_col3 = st.columns(3)
+                econ_col1, econ_col2, econ_col3 = st.columns([2, 1, 1])
                 with econ_col1:
-                    st.metric(label="Recommended Action", value=action)
+                    st.caption("Recommended Action")
+                    st.markdown(f"**{action}**")
                 with econ_col2:
-                    st.metric(label="Est. Cost Saved (per sample)", value=f"${cost_saved_per_sample:.2f}")
+                    st.metric(label="Cost Saved (per sample)", value=f"${cost_saved_per_sample:.2f}")
                 with econ_col3:
-                    st.metric(label="Doctor Hours Saved (per sample)", value=f"{time_saved_per_sample:.2f} hrs")
+                    st.metric(label="Hours Saved (per sample)", value=f"{time_saved_per_sample:.2f} hrs")
 
                 # Scale calculation
                 if pred == 0:

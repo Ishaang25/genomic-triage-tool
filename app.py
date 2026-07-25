@@ -78,21 +78,19 @@ st.markdown(f"""
         box-shadow: 0 4px 10px rgba(15,76,129,0.25);
         margin-top: 4px;
     }}
-    .hero-title {{
+        .hero-title {{
         color: {PRIMARY_DARK};
         font-size: 2.1rem;
         font-weight: 700;
         margin-bottom: 0;
         line-height: 1.2;
-        white-space: normal;
-        word-wrap: break-word;
+        overflow-wrap: anywhere;
     }}
     .hero-subtitle {{
         color: {TEXT_MUTED};
         font-size: 1.0rem;
         margin-top: 4px;
-        white-space: normal;
-        word-wrap: break-word;
+        overflow-wrap: anywhere;
     }}
 
     /* Disclaimer */
@@ -200,7 +198,7 @@ with st.sidebar:
 # ----------------------------------------------------------------------------
 # Hero section
 # ----------------------------------------------------------------------------
-col_icon, col_title = st.columns([1, 8])
+col_icon, col_title = st.columns([1, 12])
 with col_icon:
     st.markdown("<div class='hero-icon'>🧬</div>", unsafe_allow_html=True)
 with col_title:
